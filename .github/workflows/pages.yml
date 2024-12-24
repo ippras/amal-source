@@ -37,12 +37,15 @@ jobs:
         # relatively as eframe_template/favicon.ico. if we skip public-url option, the href paths will instead request username.github.io/favicon.ico which
         # will obviously return error 404 not found.
         env:
-          public_url: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          public_url: "https://${{ github.repository_owner }}.github.io/amal"
         run: ./trunk build --release --filehash=false --public-url=$public_url
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
-          # this option will not maintain any history of your previous pages deployment
-          # set to false if you want all page build to be committed to your gh-pages branch history
+          repository-name: ${{ github.repository_owner }}/amal
           single-commit: true
+          # ⚠️ Repository permissions:
+          # Contents: Read and write
+          # Pages: Read and write
+          token: ${{ secrets.DEPLOY }}

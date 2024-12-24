@@ -4,7 +4,7 @@ use ron::{extensions::Extensions, ser::PrettyConfig};
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::{self, Display, Formatter},
-    fs::{File, write},
+    fs::write,
     path::Path,
 };
 
@@ -16,7 +16,7 @@ pub(crate) struct Data {
 impl Data {
     pub(crate) fn stack(&mut self, data_frame: &DataFrame) -> Result<()> {
         // If many vstack operations are done, it is recommended to call DataFrame::align_chunks_par
-        self.data_frame.vstack_mut(&data_frame)?.align_chunks_par();
+        self.data_frame.vstack_mut(data_frame)?.align_chunks_par();
         Ok(())
     }
 
@@ -101,11 +101,7 @@ pub(crate) enum Format {
     Ron,
 }
 
-pub(crate) fn save(
-    path: impl AsRef<Path>,
-    format: Format,
-    mut data_frame: DataFrame,
-) -> Result<()> {
+pub(crate) fn save(path: impl AsRef<Path>, format: Format, data_frame: DataFrame) -> Result<()> {
     println!("data_frame: {:#?}", data_frame.schema());
     match format {
         Format::Bin => {
@@ -113,8 +109,8 @@ pub(crate) fn save(
             write(path, contents)?;
         }
         Format::Parquet => {
-            let mut file = File::create(path)?;
-            ParquetWriter::new(&mut file).finish(&mut data_frame)?;
+            // let mut file = File::create(path)?;
+            // ParquetWriter::new(&mut file).finish(&mut data_frame)?;
         }
         Format::Ron => {
             let contents = ron::ser::to_string_pretty(

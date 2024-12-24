@@ -5,9 +5,7 @@ use polars::prelude::AnyValue;
 #[derive(Clone, Copy, Debug, Default)]
 pub struct FloatValue {
     pub value: Option<f64>,
-    pub disable: bool,
     pub hover: bool,
-    pub percent: bool,
     pub precision: Option<usize>,
 }
 
@@ -19,19 +17,11 @@ impl FloatValue {
         }
     }
 
-    pub fn disable(self, disable: bool) -> Self {
-        Self { disable, ..self }
-    }
-
     pub fn hover(self) -> Self {
         Self {
             hover: true,
             ..self
         }
-    }
-
-    pub fn percent(self, percent: bool) -> Self {
-        Self { percent, ..self }
     }
 
     pub fn precision(self, precision: Option<usize>) -> Self {
@@ -41,27 +31,16 @@ impl FloatValue {
 
 impl Widget for FloatValue {
     fn ui(self, ui: &mut Ui) -> Response {
-        if self.disable {
-            ui.disable();
-        }
         let text = match self.value {
             None => RichText::new(AnyValue::Null.to_string()),
-            Some(mut value) => {
-                if self.percent {
-                    value *= 100.0;
-                }
-                match self.precision {
-                    Some(precision) => RichText::new(format!("{value:.precision$}")),
-                    None => RichText::new(AnyValue::from(value).to_string()),
-                }
-            }
+            Some(value) => match self.precision {
+                Some(precision) => RichText::new(format!("{value:.precision$}")),
+                None => RichText::new(AnyValue::from(value).to_string()),
+            },
         };
         let mut response = ui.label(text);
         if self.hover {
-            let mut value = self.value.unwrap_or_default();
-            if self.percent {
-                value *= 100.0;
-            }
+            let value = self.value.unwrap_or_default();
             let text = RichText::new(AnyValue::Float64(value).to_string());
             response = response
                 .on_hover_text(text.clone())

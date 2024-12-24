@@ -5,17 +5,17 @@ use data::Data;
 use eframe::{APP_KEY, get_value, set_value};
 use egui::{
     Align, Align2, CentralPanel, Color32, DroppedFile, FontDefinitions, Id, LayerId, Layout, Order,
-    RichText, ScrollArea, SidePanel, TextStyle, TopBottomPanel, menu::bar, warn_if_debug_build,
+    RichText, ScrollArea, TextStyle, TopBottomPanel, menu::bar, warn_if_debug_build,
 };
 use egui_ext::{DroppedFileExt, HoveredFileExt, LightDarkButton};
 use egui_phosphor::{
     Variant, add_to_fonts,
     regular::{
-        ARROWS_CLOCKWISE, DATABASE, FLOPPY_DISK, GRID_FOUR, ROCKET, SIDEBAR_SIMPLE,
-        SQUARE_SPLIT_HORIZONTAL, SQUARE_SPLIT_VERTICAL, TABLE, TABS, TRASH,
+        ARROWS_CLOCKWISE, DATABASE, GRID_FOUR, ROCKET, SQUARE_SPLIT_HORIZONTAL,
+        SQUARE_SPLIT_VERTICAL, TABS, TRASH,
     },
 };
-use egui_tiles::{ContainerKind, Tile, Tiles, Tree};
+use egui_tiles::{ContainerKind, Tile, Tree};
 use egui_tiles_ext::{TreeExt as _, VERTICAL};
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};

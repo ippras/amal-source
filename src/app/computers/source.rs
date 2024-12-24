@@ -1,6 +1,6 @@
 use crate::app::{
     MAX_TEMPERATURE,
-    panes::source::settings::{Group, Kind, Order, Settings, Sort},
+    panes::source::settings::{Kind, Order, Settings, Sort},
 };
 use egui::util::cache::{ComputerMut, FrameCache};
 use lipid::fatty_acid::{
@@ -11,10 +11,7 @@ use lipid::fatty_acid::{
     },
 };
 use polars::prelude::*;
-use std::{
-    f64::NAN,
-    hash::{Hash, Hasher},
-};
+use std::hash::{Hash, Hasher};
 
 /// Source computed
 pub(crate) type Computed = FrameCache<DataFrame, Computer>;
@@ -189,17 +186,18 @@ impl ComputerMut<Key<'_>, DataFrame> for Computer {
                         .alias("ECL"),
                 ]);
                 println!("lazy_frame: {}", lazy_frame.clone().collect().unwrap());
-                let lazy_frame = lazy_frame
-                    .group_by([match key.settings.group {
-                        Group::FattyAcid => col("FattyAcid"),
-                        Group::OnsetTemperature => {
-                            col("Mode").struct_().field_by_name("OnsetTemperature")
-                        }
-                        Group::TemperatureStep => {
-                            col("Mode").struct_().field_by_name("TemperatureStep")
-                        }
-                    }])
-                    .agg([col("RetentionTime"), col("ECL")]);
+                // let lazy_frame = lazy_frame.rank()
+                // let lazy_frame = lazy_frame
+                //     .group_by([match key.settings.group {
+                //         Group::FattyAcid => col("FattyAcid"),
+                //         Group::OnsetTemperature => {
+                //             col("Mode").struct_().field_by_name("OnsetTemperature")
+                //         }
+                //         Group::TemperatureStep => {
+                //             col("Mode").struct_().field_by_name("TemperatureStep")
+                //         }
+                //     }])
+                //     .agg([col("RetentionTime"), col("ECL")]);
                 println!("lazy_frame: {}", lazy_frame.clone().collect().unwrap());
                 lazy_frame
             }
@@ -282,7 +280,7 @@ fn relative_time(settings: &Settings) -> Expr {
                     )
                     .first()
         }
-        None => lit(NAN),
+        None => lit(f64::NAN),
     }
 }
 
