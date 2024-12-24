@@ -1,0 +1,36 @@
+|Methyl octanoate                                                       |8:0 
+|Methyl decanoate                                                       |10:0 
+|Methyl undecanoate                                                     |11:0 
+|Methyl dodecanoate                                                     |12:0 
+|Methyl tridecanoate                                                    |13:0 
+|Methyl myristate [Methyl tetradecanoate]                               |14:0 
+|Methyl myristoleate [Methyl cis-9-tetradecenoate]                      |14:1-9 
+|Methyl pentadecanoate                                                  |15:0 
+|Methyl cis-10 pentadecenoate                                           |15:1-10 
+|Methyl palmitate                                                       |16:0 
+|Methyl palmitoleate-Z9                                                 |16:1-9 
+|Methyl heptadecanoate                                                  |17:0 
+|Methyl  cis-10 heptadecenoate                                          |17:1-10 
+|Methyl  stearate                                                       |18:0 
+|Methyl trans-9 eladiate [Methyl trans-9-octadecenoate]                 |18:1-9t 
+|Methyl cis-9 oleate [Methyl cis-9-octadecenoate]                       |18:1-9 
+|Methyl linolelaidate [Methyl trans,trans-9,12-octadecadienoate]        |18:2-9t,12t 
+|Nonadecanoic acid methyl ester                                         |19:0 
+|Methyl linoleate [Methyl 9-cis,12-cis-octadecadienoate]                |18:2-9,12 
+|Methyl-gamma-linolenate, (6Z,9Z,12Z-octadecatrienoate)                 |18:3-6,9,12 
+|Methyl arachidate                                                      |20:0 
+|Methyl alfa linolenate,  Methyl (9Z,12Z,15Z)-octadeca-9,12,15-trienoate|18:3-9,12,15 
+|Methyl cis-11 eicosenoate                                              |20:1-11 
+|Methyl heneicosanoate                                                  |21:0 
+|Methyl cis-11,14 eicosadienoate                                        |20:2-11,14 
+|Methyl cis-8,11,14 eicosatrienoate                                     |20:3-8,11,14 
+|Methyl behenate [Methyl docosanoate]                                   |22:0 
+|Methyl cis-11,14,17 eicosatrienoate                                    |20:3-11,14,17 
+|Methyl arachidonate                                                    |20:4-5,8,11,14 
+|Methyl erucate [ Methyl cis-13-docosenoate]                            |22:1-13 
+|Methyl tricosanoate                                                    |23:0 
+|Methyl cis-13,16 docosadienoate                                        |22:2-13,16 
+|Methyl cis-5,8,11,14,17 eicosapentaenoate                              |20:5-5,8,11,14,17 
+|Methyl lignocerate [Methyl tetracosanoate]                             |24:0 
+|Methyl nervonate [Methyl cis-15-tetracosenoate]                        |24:1-15 
+|Methyl cis-4,7,10,13,16,19 docosahexaenoate                            |22:6-4,7,10,13,16,19 
