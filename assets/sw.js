@@ -1,9 +1,9 @@
-var cacheName = 'egui-template-pwa';
+var cacheName = 'amal';
 var filesToCache = [
   './',
   './index.html',
-  './ms_viewer.js',
-  './ms_viewer_bg.wasm',
+  './amal.js',
+  './amal_bg.wasm',
 ];
 
 /* Start the service worker and cache all of the app's content */

@@ -1,6 +1,6 @@
 use crate::app::{
     MAX_TEMPERATURE,
-    panes::source::settings::{Kind, Order, Settings, Sort},
+    panes::source::settings::{Group, Kind, Order, Settings, Sort},
 };
 use egui::util::cache::{ComputerMut, FrameCache};
 use lipid::fatty_acid::{
@@ -172,7 +172,8 @@ impl ComputerMut<Key<'_>, DataFrame> for Computer {
         lazy_frame = match key.settings.kind {
             Kind::Plot => {
                 lazy_frame = lazy_frame.select([
-                    col("Mode"),
+                    col("Mode").struct_().field_by_name("OnsetTemperature"),
+                    col("Mode").struct_().field_by_name("TemperatureStep"),
                     col("FattyAcid"),
                     col("RetentionTime")
                         .struct_()
@@ -187,17 +188,38 @@ impl ComputerMut<Key<'_>, DataFrame> for Computer {
                 ]);
                 println!("lazy_frame: {}", lazy_frame.clone().collect().unwrap());
                 // let lazy_frame = lazy_frame.rank()
-                // let lazy_frame = lazy_frame
-                //     .group_by([match key.settings.group {
-                //         Group::FattyAcid => col("FattyAcid"),
-                //         Group::OnsetTemperature => {
-                //             col("Mode").struct_().field_by_name("OnsetTemperature")
-                //         }
-                //         Group::TemperatureStep => {
-                //             col("Mode").struct_().field_by_name("TemperatureStep")
-                //         }
-                //     }])
-                //     .agg([col("RetentionTime"), col("ECL")]);
+                let lazy_frame =
+                    match key.settings.group {
+                        Group::FattyAcid => lazy_frame
+                            .group_by([col("FattyAcid"), col("OnsetTemperature")])
+                            .agg([col("TemperatureStep"), col("RetentionTime"), col("ECL")])
+                            .group_by([col("FattyAcid")])
+                            .agg([
+                                col("OnsetTemperature"),
+                                col("TemperatureStep"),
+                                col("RetentionTime"),
+                                col("ECL"),
+                            ])
+                            .sort(["FattyAcid"], Default::default()),
+                        Group::OnsetTemperature => lazy_frame
+                            .group_by([col("OnsetTemperature")])
+                            .agg([as_struct(vec![
+                                col("TemperatureStep"),
+                                col("FattyAcid"),
+                                col("RetentionTime"),
+                                col("ECL"),
+                            ])
+                            .alias("Value")]),
+                        Group::TemperatureStep => lazy_frame
+                            .group_by([col("TemperatureStep")])
+                            .agg([as_struct(vec![
+                                col("OnsetTemperature"),
+                                col("FattyAcid"),
+                                col("RetentionTime"),
+                                col("ECL"),
+                            ])
+                            .alias("Value")]),
+                    };
                 println!("lazy_frame: {}", lazy_frame.clone().collect().unwrap());
                 lazy_frame
             }
