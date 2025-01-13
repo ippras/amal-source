@@ -132,40 +132,43 @@ impl TableView<'_> {
         }
     }
 
-    fn body_cell_content_ui(&mut self, ui: &mut Ui, row: usize, column: Range<usize>) {
+    fn body_cell_content_ui(
+        &mut self,
+        ui: &mut Ui,
+        row: usize,
+        column: Range<usize>,
+    ) -> PolarsResult<()> {
         match (row, column) {
             (row, id::INDEX) => {
-                let index = self.data_frame["Index"].u32().unwrap();
+                let index = self.data_frame["Index"].u32()?;
                 let value = index.get(row).unwrap();
                 ui.label(value.to_string());
             }
             (row, id::MODE) => {
-                let mode = self.data_frame["Mode"].struct_().unwrap();
-                let onset_temperature = mode.field_by_name("OnsetTemperature").unwrap();
-                let temperature_step = mode.field_by_name("TemperatureStep").unwrap();
+                let mode = self.data_frame["Mode"].struct_()?;
+                let onset_temperature = mode.field_by_name("OnsetTemperature")?;
+                let temperature_step = mode.field_by_name("TemperatureStep")?;
                 ui.label(format!(
                     "{}/{}",
-                    onset_temperature.str_value(row).unwrap(),
-                    temperature_step.str_value(row).unwrap()
+                    onset_temperature.str_value(row)?,
+                    temperature_step.str_value(row)?
                 ));
             }
             (row, id::FA) => {
                 let fatty_acids = self.data_frame["FattyAcid"].fatty_acid();
-                let fatty_acid = fatty_acids.get(row).unwrap().unwrap();
+                let fatty_acid = fatty_acids.get(row)?.unwrap();
                 ui.label(format!("{:#}", fatty_acid.display(COMMON)));
                 // .on_hover_text(fatty_acid.label());
             }
             (row, retention_time::ABSOLUTE) => {
-                let retention_time = self.data_frame["RetentionTime"].struct_().unwrap();
-                let absolute = retention_time.field_by_name("Absolute").unwrap();
-                let absolute = absolute.struct_().unwrap();
-                let mean = absolute.field_by_name("Mean").unwrap();
+                let retention_time = self.data_frame["RetentionTime"].struct_()?;
+                let absolute = retention_time.field_by_name("Absolute")?;
+                let absolute = absolute.struct_()?;
+                let mean = absolute.field_by_name("Mean")?;
                 ui.add(
-                    FloatValue::new(mean.f64().unwrap().get(row))
-                        .precision(Some(self.settings.precision)),
+                    FloatValue::new(mean.f64()?.get(row)).precision(Some(self.settings.precision)),
                 )
                 .on_hover_ui(|ui| {
-                    ui.spacing_mut().item_spacing.x = 0.0;
                     let standard_deviation = absolute.field_by_name("StandardDeviation").unwrap();
                     ui.horizontal(|ui| {
                         ui.label(mean.str_value(row).unwrap());
@@ -174,7 +177,6 @@ impl TableView<'_> {
                     });
                 })
                 .on_hover_ui(|ui| {
-                    ui.spacing_mut().item_spacing.x = 0.0;
                     ui.heading("Repeats");
                     let values = absolute
                         .field_by_name("Values")
@@ -191,19 +193,19 @@ impl TableView<'_> {
                 });
             }
             (row, retention_time::RELATIVE) => {
-                let retention_time = self.data_frame["RetentionTime"].struct_().unwrap();
-                let relative = retention_time.field_by_name("Relative").unwrap();
+                let retention_time = self.data_frame["RetentionTime"].struct_()?;
+                let relative = retention_time.field_by_name("Relative")?;
                 ui.add(
-                    FloatValue::new(relative.f64().unwrap().get(row))
+                    FloatValue::new(relative.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
             }
             (row, retention_time::DELTA) => {
-                let retention_time = self.data_frame["RetentionTime"].struct_().unwrap();
-                let delta = retention_time.field_by_name("Delta").unwrap();
+                let retention_time = self.data_frame["RetentionTime"].struct_()?;
+                let delta = retention_time.field_by_name("Delta")?;
                 ui.add(
-                    FloatValue::new(delta.f64().unwrap().get(row))
+                    FloatValue::new(delta.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
@@ -211,39 +213,39 @@ impl TableView<'_> {
             (row, TEMPERATURE) => {
                 let temperature = &self.data_frame["Temperature"];
                 ui.add(
-                    FloatValue::new(temperature.f64().unwrap().get(row))
+                    FloatValue::new(temperature.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
             }
             (row, chain_length::ECL) => {
-                let chain_length = self.data_frame["ChainLength"].struct_().unwrap();
-                let ecl = chain_length.field_by_name("ECL").unwrap();
+                let chain_length = self.data_frame["ChainLength"].struct_()?;
+                let ecl = chain_length.field_by_name("ECL")?;
                 ui.add(
-                    FloatValue::new(ecl.f64().unwrap().get(row))
+                    FloatValue::new(ecl.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
             }
             (row, chain_length::FCL) => {
-                let chain_length = self.data_frame["ChainLength"].struct_().unwrap();
-                let fcl = chain_length.field_by_name("FCL").unwrap();
+                let chain_length = self.data_frame["ChainLength"].struct_()?;
+                let fcl = chain_length.field_by_name("FCL")?;
                 ui.add(
-                    FloatValue::new(fcl.f64().unwrap().get(row))
+                    FloatValue::new(fcl.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
             }
             (row, chain_length::ECN) => {
-                let chain_length = self.data_frame["ChainLength"].struct_().unwrap();
-                let ecn = chain_length.field_by_name("ECN").unwrap();
-                ui.label(ecn.str_value(row).unwrap());
+                let chain_length = self.data_frame["ChainLength"].struct_()?;
+                let ecn = chain_length.field_by_name("ECN")?;
+                ui.label(ecn.str_value(row)?);
             }
             (row, MASS) => {
-                let mass = self.data_frame["Mass"].struct_().unwrap();
-                let rcooch3 = mass.field_by_name("RCOOCH3").unwrap();
+                let mass = self.data_frame["Mass"].struct_()?;
+                let rcooch3 = mass.field_by_name("RCOOCH3")?;
                 ui.add(
-                    FloatValue::new(rcooch3.f64().unwrap().get(row))
+                    FloatValue::new(rcooch3.f64()?.get(row))
                         .precision(Some(self.settings.precision)),
                 )
                 .on_hover_ui(|ui| {
@@ -269,19 +271,19 @@ impl TableView<'_> {
                 });
             }
             (row, derivative::SLOPE) => {
-                let derivative = self.data_frame["Derivative"].struct_().unwrap();
-                let slope = derivative.field_by_name("Slope").unwrap();
+                let derivative = self.data_frame["Derivative"].struct_()?;
+                let slope = derivative.field_by_name("Slope")?;
                 ui.add(
-                    FloatValue::new(slope.f64().unwrap().get(row))
+                    FloatValue::new(slope.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
             }
             (row, derivative::ANGLE) => {
-                let derivative = self.data_frame["Derivative"].struct_().unwrap();
-                let angle = derivative.field_by_name("Angle").unwrap();
+                let derivative = self.data_frame["Derivative"].struct_()?;
+                let angle = derivative.field_by_name("Angle")?;
                 ui.add(
-                    FloatValue::new(angle.f64().unwrap().get(row))
+                    FloatValue::new(angle.f64()?.get(row))
                         .precision(Some(self.settings.precision))
                         .hover(),
                 );
@@ -289,6 +291,7 @@ impl TableView<'_> {
             _ => unreachable!(),
             // _ => {}
         }
+        Ok(())
     }
 }
 

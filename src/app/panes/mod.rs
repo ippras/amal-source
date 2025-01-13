@@ -2,6 +2,7 @@ pub(crate) use self::{distance::Pane as DistancePane, source::Pane as SourcePane
 
 use egui::Ui;
 use egui_phosphor::regular::{CHART_BAR, TABLE};
+use metadata::MetaDataFrame;
 use polars::frame::DataFrame;
 use serde::{Deserialize, Serialize};
 
@@ -13,12 +14,12 @@ pub(crate) enum Pane {
 }
 
 impl Pane {
-    pub(crate) fn source(data_frame: DataFrame) -> Self {
-        Self::Source(SourcePane::new(data_frame))
+    pub(crate) fn source(frame: MetaDataFrame) -> Self {
+        Self::Source(SourcePane::new(frame))
     }
 
-    pub(crate) fn distance(data_frame: DataFrame) -> Self {
-        Self::Distance(DistancePane::new(data_frame))
+    pub(crate) fn distance(frame: MetaDataFrame) -> Self {
+        Self::Distance(DistancePane::new(frame))
     }
 
     pub(crate) const fn icon(&self) -> &str {

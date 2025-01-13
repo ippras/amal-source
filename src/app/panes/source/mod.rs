@@ -4,13 +4,16 @@ use self::{
     settings::{Kind, Settings},
     table::TableView,
 };
-use crate::app::{
-    computers::{SourceComputed, SourceKey},
-    data::{Format, save},
-    localize,
+use crate::{
+    app::{
+        computers::{SourceComputed, SourceKey},
+        localize,
+    },
+    utils::save,
 };
 use egui::{Id, RichText, Ui, Window};
 use egui_phosphor::regular::{ARROWS_HORIZONTAL, CHART_BAR, EXCLUDE, FLOPPY_DISK, GEAR, TABLE};
+use metadata::MetaDataFrame;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use tracing::error;
@@ -18,15 +21,15 @@ use tracing::error;
 /// Source pane
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct Pane {
-    pub(crate) source: DataFrame,
+    pub(crate) source: MetaDataFrame,
     pub(crate) target: DataFrame,
     pub(crate) control: Control,
 }
 
 impl Pane {
-    pub(crate) const fn new(data_frame: DataFrame) -> Self {
+    pub(crate) const fn new(frame: MetaDataFrame) -> Self {
         Self {
-            source: data_frame,
+            source: frame,
             target: DataFrame::empty(),
             control: Control::new(),
         }
@@ -55,48 +58,28 @@ impl Pane {
             }
         };
         if ui.button(RichText::new(EXCLUDE).heading()).clicked() {
-            ui.data_mut(|data| data.insert_temp(Id::new("Distance"), self.target.clone()))
+            ui.data_mut(|data| {
+                data.insert_temp(
+                    Id::new("Distance"),
+                    MetaDataFrame::new(self.source.meta.clone(), self.target.clone()),
+                )
+            })
         }
         ui.separator();
-        ui.menu_button(RichText::new(FLOPPY_DISK).heading(), |ui| {
-            if ui.button("Parquet").clicked() {
-                if let Err(error) = save("df.parquet", Format::Parquet, self.target.clone()) {
-                    error!(%error);
-                }
-                ui.close_menu();
+        // Save
+        if ui.button(RichText::new(FLOPPY_DISK).heading()).clicked() {
+            let name = format!("{}.source.ipc", self.source.meta.title());
+            if let Err(error) = save(&name, Some(&self.source.meta), &mut self.target) {
+                error!(%error);
             }
-            if ui.button("BIN").clicked() {
-                // println!("self.target: {}", self.target);
-                // let lazy_frame = self.target.clone().lazy().select([
-                //     col("Mode").struct_().field_by_names(["*"]),
-                //     col("FA"),
-                //     col("Time").struct_().field_by_name("Values").alias("Time"),
-                // ]);
-                if let Err(error) = save("df.bin", Format::Bin, self.target.clone()) {
-                    error!(%error);
-                }
-                ui.close_menu();
-            }
-            if ui.button("RON").clicked() {
-                if let Err(error) = save("df.ron", Format::Ron, self.target.clone()) {
-                    error!(%error);
-                }
-                ui.close_menu();
-            }
-        });
+        }
     }
 
     pub(super) fn content(&mut self, ui: &mut Ui) {
         self.window(ui);
         self.target = ui.memory_mut(|memory| {
             memory.caches.cache::<SourceComputed>().get(SourceKey {
-                data_frame: &self.source,
-                settings: &self.control.settings,
-            })
-        });
-        self.target = ui.memory_mut(|memory| {
-            memory.caches.cache::<SourceComputed>().get(SourceKey {
-                data_frame: &self.source,
+                data_frame: &self.source.data,
                 settings: &self.control.settings,
             })
         });
@@ -111,7 +94,7 @@ impl Pane {
             .id(ui.next_auto_id())
             .open(&mut self.control.open)
             .show(ui.ctx(), |ui| {
-                if let Err(error) = self.control.settings.ui(ui, &self.source) {
+                if let Err(error) = self.control.settings.ui(ui, &self.source.data) {
                     error!(%error);
                 }
             });

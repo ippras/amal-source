@@ -1,11 +1,14 @@
 use self::{control::Control, settings::Settings};
-use crate::app::{
-    computers::{DistanceComputed, DistanceKey},
-    data::{Format, save},
-    localize,
+use crate::{
+    app::{
+        computers::{DistanceComputed, DistanceKey},
+        localize,
+    },
+    utils::save,
 };
 use egui::{RichText, Ui, Window};
 use egui_phosphor::regular::{ARROWS_HORIZONTAL, FLOPPY_DISK, GEAR};
+use metadata::MetaDataFrame;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use table::TableView;
@@ -14,15 +17,15 @@ use tracing::error;
 /// Distance pane
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct Pane {
-    pub(crate) source: DataFrame,
+    pub(crate) source: MetaDataFrame,
     pub(crate) target: DataFrame,
     pub(crate) control: Control,
 }
 
 impl Pane {
-    pub(crate) const fn new(data_frame: DataFrame) -> Self {
+    pub(crate) const fn new(frame: MetaDataFrame) -> Self {
         Self {
-            source: data_frame,
+            source: frame,
             target: DataFrame::empty(),
             control: Control::new(),
         }
@@ -38,25 +41,32 @@ impl Pane {
         .on_hover_text(localize!("resize"));
         ui.toggle_value(&mut self.control.open, RichText::new(GEAR).heading());
         ui.separator();
-        ui.menu_button(RichText::new(FLOPPY_DISK).heading(), |ui| {
-            if ui.button("BIN").clicked() {
-                if let Err(error) = save("df.bin", Format::Bin, self.target.clone()) {
-                    error!(%error);
-                }
+        // ui.menu_button(RichText::new(FLOPPY_DISK).heading(), |ui| {
+        //     if ui.button("BIN").clicked() {
+        //         if let Err(error) = save("df.bin", Format::Bin, self.target.clone()) {
+        //             error!(%error);
+        //         }
+        //     }
+        //     if ui.button("RON").clicked() {
+        //         if let Err(error) = save("df.ron", Format::Ron, self.target.clone()) {
+        //             error!(%error);
+        //         }
+        //     }
+        // });
+        if ui.button(RichText::new(FLOPPY_DISK).heading()).clicked() {
+            let name = format!("{}.distance.ipc", self.source.meta.title());
+            if let Err(error) = save(&name, Some(&self.source.meta), &mut self.target) {
+                error!(%error);
             }
-            if ui.button("RON").clicked() {
-                if let Err(error) = save("df.ron", Format::Ron, self.target.clone()) {
-                    error!(%error);
-                }
-            }
-        });
+            ui.close_menu();
+        }
     }
 
     pub(super) fn content(&mut self, ui: &mut Ui) {
         self.window(ui);
         self.target = ui.memory_mut(|memory| {
             memory.caches.cache::<DistanceComputed>().get(DistanceKey {
-                data_frame: &self.source,
+                data_frame: &self.source.data,
                 settings: &self.control.settings,
             })
         });
@@ -68,7 +78,7 @@ impl Pane {
             .id(ui.next_auto_id())
             .open(&mut self.control.open)
             .show(ui.ctx(), |ui| {
-                self.control.settings.ui(ui, &self.source);
+                self.control.settings.ui(ui, &self.source.data);
             });
     }
 }

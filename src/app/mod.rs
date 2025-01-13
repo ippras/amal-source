@@ -4,7 +4,7 @@ use anyhow::Result;
 use data::Data;
 use eframe::{APP_KEY, get_value, set_value};
 use egui::{
-    Align, Align2, CentralPanel, Color32, DroppedFile, FontDefinitions, Id, LayerId, Layout, Order,
+    Align, Align2, CentralPanel, Color32, FontDefinitions, Grid, Id, Label, LayerId, Layout, Order,
     RichText, ScrollArea, TextStyle, TopBottomPanel, menu::bar, warn_if_debug_build,
 };
 use egui_ext::{DroppedFileExt, HoveredFileExt, LightDarkButton};
@@ -17,9 +17,9 @@ use egui_phosphor::{
 };
 use egui_tiles::{ContainerKind, Tile, Tree};
 use egui_tiles_ext::{TreeExt as _, VERTICAL};
-use polars::prelude::*;
+use metadata::MetaDataFrame;
 use serde::{Deserialize, Serialize};
-use std::{fmt::Write, str, time::Duration};
+use std::{fmt::Write, io::Cursor, str, time::Duration};
 use tracing::{error, info, trace};
 
 macro localize($text:literal) {
@@ -102,62 +102,67 @@ impl App {
         }) {
             info!(?dropped_files);
             for dropped_file in dropped_files {
-                // let data_frame: DataFrame = match dropped_file.extension().and_then(OsStr::to_str) {
-                //     Some("bin") => bincode::deserialize(&fs::read(&args.path)?)?,
-                //     Some("ron") => ron::de::from_str(&fs::read_to_string(&args.path)?)?,
-                //     _ => panic!("unsupported input file extension"),
+                if let Err(error) = || -> Result<()> {
+                    let frame = MetaDataFrame::read(Cursor::new(dropped_file.bytes()?))?;
+                    trace!(?frame);
+                    self.data.stack(&frame.data)?;
+                    ctx.request_repaint();
+                    Ok(())
+                }() {
+                    error!(%error);
+                }
+                // match ron(&dropped_file) {
+                //     Ok(data_frame) => {
+                //         trace!(?data_frame);
+                //         self.data.stack(&data_frame).unwrap();
+                //         if !self.tree.tiles.is_empty() {
+                //             self.tree = Tree::empty("tree");
+                //         }
+                //         // self.tree
+                //         //     .insert_pane(Pane::source(self.data.data_frame.clone()));
+                //         // self.tree
+                //         //     .insert_pane(Pane::distance(self.data.data_frame.clone()));
+                //         trace!(?self.data);
+                //     }
+                //     Err(error) => {
+                //         error!(%error);
+                //         // self.toasts
+                //         //     .error(format!("{}: {error}", dropped.display()))
+                //         //     .set_closable(true)
+                //         //     .set_duration(Some(NOTIFICATIONS_DURATION));
+                //         continue;
+                //     }
                 // };
-                match ron(&dropped_file) {
-                    Ok(data_frame) => {
-                        trace!(?data_frame);
-                        self.data.stack(&data_frame).unwrap();
-                        if !self.tree.tiles.is_empty() {
-                            self.tree = Tree::empty("tree");
-                        }
-                        // self.tree
-                        //     .insert_pane(Pane::source(self.data.data_frame.clone()));
-                        // self.tree
-                        //     .insert_pane(Pane::distance(self.data.data_frame.clone()));
-                        trace!(?self.data);
-                    }
-                    Err(error) => {
-                        error!(%error);
-                        // self.toasts
-                        //     .error(format!("{}: {error}", dropped.display()))
-                        //     .set_closable(true)
-                        //     .set_duration(Some(NOTIFICATIONS_DURATION));
-                        continue;
-                    }
-                };
             }
-            println!("data_frame: {}", self.data.data_frame);
-            let data_frame = self
-                .data
-                .data_frame
-                .clone()
-                .lazy()
-                .select([
-                    as_struct(vec![
-                        col("OnsetTemperature").alias("OnsetTemperature"),
-                        col("TemperatureStep").alias("TemperatureStep"),
-                    ])
-                    .alias("Mode"),
-                    col("FA"),
-                    col("Time"),
-                ])
-                .cache()
-                .sort(["Mode"], SortMultipleOptions::new())
-                .select([all()
-                    .sort_by(&[col("Time").list().mean()], SortMultipleOptions::new())
-                    .over([col("Mode")])])
-                .collect()
-                .unwrap();
-            println!("data_frame: {data_frame}");
-            self.tree
-                .insert_pane::<VERTICAL>(Pane::source(data_frame.clone()));
-            self.tree
-                .insert_pane::<VERTICAL>(Pane::distance(data_frame.clone()));
-            data::save("data_frame.bin", data::Format::Bin, data_frame).unwrap();
+            // TODO
+            // println!("data_frame: {}", self.data.data_frame);
+            // let data_frame = self
+            //     .data
+            //     .data_frame
+            //     .clone()
+            //     .lazy()
+            //     .select([
+            //         as_struct(vec![
+            //             col("OnsetTemperature").alias("OnsetTemperature"),
+            //             col("TemperatureStep").alias("TemperatureStep"),
+            //         ])
+            //         .alias("Mode"),
+            //         col("FA"),
+            //         col("Time"),
+            //     ])
+            //     .cache()
+            //     .sort(["Mode"], SortMultipleOptions::new())
+            //     .select([all()
+            //         .sort_by(&[col("Time").list().mean()], SortMultipleOptions::new())
+            //         .over([col("Mode")])])
+            //     .collect()
+            //     .unwrap();
+            // println!("data_frame: {data_frame}");
+            // self.tree
+            //     .insert_pane::<VERTICAL>(Pane::source(data_frame.clone()));
+            // self.tree
+            //     .insert_pane::<VERTICAL>(Pane::distance(data_frame.clone()));
+            // data::save("data_frame.bin", data::Format::Bin, data_frame).unwrap();
         }
     }
 }
@@ -213,6 +218,7 @@ impl App {
                         .on_hover_text(localize!("reactive_description_enabled"))
                         .on_disabled_hover_text(localize!("reactive_description_disabled"));
                     ui.separator();
+                    // Reset app
                     if ui
                         .button(RichText::new(TRASH).size(SIZE))
                         .on_hover_text(localize!("reset_application"))
@@ -224,12 +230,15 @@ impl App {
                         };
                     }
                     ui.separator();
+                    // Reset GUI
                     if ui
                         .button(RichText::new(ARROWS_CLOCKWISE).size(SIZE))
                         .on_hover_text(localize!("reset_gui"))
                         .clicked()
                     {
-                        ui.memory_mut(|memory| *memory = Default::default());
+                        ui.memory_mut(|memory| {
+                            memory.data = Default::default();
+                        });
                     }
                     ui.separator();
                     if ui
@@ -278,10 +287,39 @@ impl App {
                     }
                     ui.separator();
                     ui.menu_button(RichText::new(DATABASE).size(SIZE), |ui| {
-                        if ui
-                            .button(RichText::new(format!("{DATABASE} IPPRAS/Agilent")).heading())
-                            .clicked()
-                        {
+                        let mut response = ui
+                            .button(RichText::new(format!("{DATABASE} IPPRAS/Agilent")).heading());
+                        response = response.on_hover_ui(|ui| {
+                            let meta = &AGILENT.meta;
+                            Grid::new(ui.next_auto_id()).show(ui, |ui| {
+                                ui.label("Name");
+                                ui.label(&meta.name);
+                                ui.end_row();
+
+                                if !meta.description.is_empty() {
+                                    ui.label("Description");
+                                    ui.add(Label::new(&meta.description).truncate());
+                                    ui.end_row();
+                                }
+
+                                ui.label("Authors");
+                                ui.label(meta.authors.join(", "));
+                                ui.end_row();
+
+                                if let Some(version) = &meta.version {
+                                    ui.label("Version");
+                                    ui.label(version.to_string());
+                                    ui.end_row();
+                                }
+
+                                if let Some(date) = &meta.date {
+                                    ui.label("Date");
+                                    ui.label(date.to_string());
+                                    ui.end_row();
+                                }
+                            });
+                        });
+                        if response.clicked() {
                             self.tree
                                 .insert_pane::<VERTICAL>(Pane::source(AGILENT.clone()));
                             ui.close_menu();
@@ -296,9 +334,8 @@ impl App {
 
 impl App {
     fn distance(&mut self, ctx: &egui::Context) {
-        if let Some(data_frame) = ctx.data_mut(|data| data.remove_temp(Id::new("Distance"))) {
-            self.tree
-                .insert_pane::<VERTICAL>(Pane::distance(data_frame));
+        if let Some(frame) = ctx.data_mut(|data| data.remove_temp(Id::new("Distance"))) {
+            self.tree.insert_pane::<VERTICAL>(Pane::distance(frame));
         }
     }
 }
@@ -318,14 +355,6 @@ impl eframe::App for App {
             ctx.request_repaint();
         }
     }
-}
-
-fn bin(dropped_file: &DroppedFile) -> Result<DataFrame> {
-    Ok(bincode::deserialize(&dropped_file.bytes()?)?)
-}
-
-fn ron(dropped_file: &DroppedFile) -> Result<DataFrame> {
-    Ok(ron::de::from_bytes(&dropped_file.bytes()?)?)
 }
 
 mod computers;

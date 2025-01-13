@@ -1,12 +1,7 @@
 use anyhow::Result;
 use polars::prelude::*;
-use ron::{extensions::Extensions, ser::PrettyConfig};
 use serde::{Deserialize, Serialize};
-use std::{
-    fmt::{self, Display, Formatter},
-    fs::write,
-    path::Path,
-};
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub(crate) struct Data {
@@ -91,34 +86,4 @@ impl Default for Data {
             ])),
         }
     }
-}
-
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
-pub(crate) enum Format {
-    #[default]
-    Bin,
-    Parquet,
-    Ron,
-}
-
-pub(crate) fn save(path: impl AsRef<Path>, format: Format, data_frame: DataFrame) -> Result<()> {
-    println!("data_frame: {:#?}", data_frame.schema());
-    match format {
-        Format::Bin => {
-            let contents = bincode::serialize(&data_frame)?;
-            write(path, contents)?;
-        }
-        Format::Parquet => {
-            // let mut file = File::create(path)?;
-            // ParquetWriter::new(&mut file).finish(&mut data_frame)?;
-        }
-        Format::Ron => {
-            let contents = ron::ser::to_string_pretty(
-                &data_frame,
-                PrettyConfig::default().extensions(Extensions::IMPLICIT_SOME),
-            )?;
-            write(path, contents)?;
-        }
-    }
-    Ok(())
 }

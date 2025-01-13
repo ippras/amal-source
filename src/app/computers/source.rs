@@ -3,12 +3,9 @@ use crate::app::{
     panes::source::settings::{Group, Kind, Order, Settings, Sort},
 };
 use egui::util::cache::{ComputerMut, FrameCache};
-use lipid::fatty_acid::{
-    Kind as FattyAcidKind,
-    polars::{
-        ChainLength as _, ExprExt,
-        expr::{FattyAcidExpr, chain_length::Options, mass::Mass as _},
-    },
+use lipid::{
+    fatty_acid::{Kind as FattyAcidKind, polars::expr::FattyAcidExpr},
+    prelude::*,
 };
 use polars::prelude::*;
 use std::hash::{Hash, Hasher};
@@ -43,7 +40,7 @@ impl Computer {
                     .alias("RelativeRetentionTime"),
                 // Delta retention time
                 col("FattyAcid")
-                    .fatty_acid()
+                    .fa()
                     .delta(col("RetentionTimeMean"))
                     .over(["Mode"])
                     .alias("DeltaRetentionTime"),
@@ -55,29 +52,29 @@ impl Computer {
                 .alias("Temperature"),
                 // FCL
                 col("FattyAcid")
-                    .fatty_acid()
+                    .fa()
                     .fcl(
                         col("RetentionTimeMean"),
-                        Options::new().logarithmic(key.settings.logarithmic),
+                        ChainLengthOptions::new().logarithmic(key.settings.logarithmic),
                     )
                     .over(["Mode"])
                     .alias("FCL"),
                 // ECL
                 col("FattyAcid")
-                    .fatty_acid()
+                    .fa()
                     .ecl(
                         col("RetentionTimeMean"),
-                        Options::new().logarithmic(key.settings.logarithmic),
+                        ChainLengthOptions::new().logarithmic(key.settings.logarithmic),
                     )
                     .over(["Mode"])
                     .alias("ECL"),
                 // ECN
-                col("FattyAcid").fatty_acid().ecn().alias("ECN"),
+                col("FattyAcid").fa().ecn().alias("ECN"),
             ])
             .with_columns([
                 // Slope
                 col("FattyAcid")
-                    .fatty_acid()
+                    .fa()
                     .slope(col("ECL"), col("RetentionTimeMean"))
                     .over(["Mode"])
                     .alias("Slope"),
@@ -103,20 +100,17 @@ impl Computer {
                 as_struct(vec![col("ECL"), col("FCL"), col("ECN")]).alias("ChainLength"),
                 // Mass
                 as_struct(vec![
+                    col("FattyAcid").fa().mass(FattyAcidKind::Rco).alias("RCO"),
                     col("FattyAcid")
-                        .fatty_acid()
-                        .mass(FattyAcidKind::Rco)
-                        .alias("RCO"),
-                    col("FattyAcid")
-                        .fatty_acid()
+                        .fa()
                         .mass(FattyAcidKind::Rcoo)
                         .alias("RCOO"),
                     col("FattyAcid")
-                        .fatty_acid()
+                        .fa()
                         .mass(FattyAcidKind::Rcooh)
                         .alias("RCOOH"),
                     col("FattyAcid")
-                        .fatty_acid()
+                        .fa()
                         .mass(FattyAcidKind::Rcooch3)
                         .alias("RCOOCH3"),
                 ])
@@ -148,7 +142,7 @@ impl Computer {
         if !key.settings.filter.fatty_acids.is_empty() {
             let mut expr = lit(false);
             for fatty_acid in &key.settings.filter.fatty_acids {
-                expr = expr.or(col("FattyAcid").fatty_acid().equal(fatty_acid));
+                expr = expr.or(col("FattyAcid").fa().equal(fatty_acid));
             }
             lazy_frame = lazy_frame.filter(expr);
         }
@@ -285,21 +279,7 @@ fn relative_time(settings: &Settings) -> Expr {
         Some(relative) => {
             col("RetentionTimeMean")
                 / col("RetentionTimeMean")
-                    .filter(
-                        // col("FattyAcid")
-                        //     .fatty_acid()
-                        //     .c()
-                        //     .eq(lit(relative.carbons))
-                        //     .and(col("FattyAcid").fatty_acid().indices().eq(lit(Scalar::new(
-                        //         DataType::List(Box::new(DataType::UInt8)),
-                        //         AnyValue::List(Series::from_iter(relative.indices.iter())),
-                        //     ))))
-                        //     .and(col("FattyAcid").fatty_acid().bounds().eq(lit(Scalar::new(
-                        //         DataType::List(Box::new(DataType::Int8)),
-                        //         AnyValue::List(Series::from_iter(relative.bounds.iter())),
-                        //     )))),
-                        col("FattyAcid").fatty_acid().equal(relative),
-                    )
+                    .filter(col("FattyAcid").fa().equal(relative))
                     .first()
         }
         None => lit(f64::NAN),

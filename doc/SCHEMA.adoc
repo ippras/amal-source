@@ -1,0 +1,56 @@
+= Схема
+
+== Таблица измерений
+
+Schema (3_600, 8):
+
+[%header]
+|===
+|Name         |Field
+|Index        |UInt32
+|Mode         |Struct([Field { name: "OnsetTemperature", dtype: Float64 }, Field { name: "TemperatureStep", dtype: Float64 }])
+|FattyAcid    |Struct([Field { name: "Carbons", dtype: UInt8 }, Field { name: "Unsaturated", dtype: List(Struct([Field { name: "Index", dtype: UInt8 }, Field { name: "Isomerism", dtype: Int8 }, Field { name: "Unsaturation", dtype: UInt8 }])) }])
+|RetentionTime|Struct([Field { name: "Absolute", dtype: Struct([Field { name: "Mean", dtype: Float64 }, Field { name: "StandardDeviation", dtype: Float64 }, Field { name: "Values", dtype: List(Float64) }]) }, Field { name: "Relative", dtype: Float64 }, Field { name: "Delta", dtype: Float64 }])
+|Temperature  |Float64
+|ChainLength  |Struct([Field { name: "ECL", dtype: Float64 }, Field { name: "FCL", dtype: Float64 }, Field { name: "ECN", dtype: Int64 }])
+|Mass         |Struct([Field { name: "RCO", dtype: Float64 }, Field { name: "RCOO", dtype: Float64 }, Field { name: "RCOOH", dtype: Float64 }, Field { name: "RCOOCH3", dtype: Float64 }])
+|Derivative   |Struct([Field { name: "Slope", dtype: Float64 }, Field { name: "Angle", dtype: Float64 }])
+|===
+
+== Таблица дистанций
+
+Schema (63_000, 6):
+
+[%header]
+|===
+|Index        |UInt32
+|Mode         |Struct([Field { name: "OnsetTemperature", dtype: Float64 }, Field { name: "TemperatureStep", dtype: Float64 }])
+|From         |Struct([Field { name: "Carbons", dtype: UInt8 }, Field { name: "Unsaturated", dtype: List(Struct([Field { name: "Index", dtype: UInt8 }, Field { name: "Isomerism", dtype: Int8 }, Field { name: "Unsaturation", dtype: UInt8 }])) }])
+|To           |Struct([Field { name: "Carbons", dtype: UInt8 }, Field { name: "Unsaturated", dtype: List(Struct([Field { name: "Index", dtype: UInt8 }, Field { name: "Isomerism", dtype: Int8 }, Field { name: "Unsaturation", dtype: UInt8 }])) }])
+|RetentionTime|Struct([Field { name: "From", dtype: Float64 }, Field { name: "To", dtype: Float64 }, Field { name: "Delta", dtype: Float64 }])
+|ECL          |Struct([Field { name: "From", dtype: Float64 }, Field { name: "To", dtype: Float64 }, Field { name: "Delta", dtype: Float64 }])
+|===
+
+== Таблица измерений
+
+Schema (3_600, 8):
+
+* name: Index,         field: UInt32
+* name: Mode,          field: Struct([Field { name: "OnsetTemperature", dtype: Float64 }, Field { name: "TemperatureStep", dtype: Float64 }])
+* name: FattyAcid,     field: Struct([Field { name: "Carbons", dtype: UInt8 }, Field { name: "Unsaturated", dtype: List(Struct([Field { name: "Index", dtype: UInt8 }, Field { name: "Isomerism", dtype: Int8 }, Field { name: "Unsaturation", dtype: UInt8 }])) }])
+* name: RetentionTime, field: Struct([Field { name: "Absolute", dtype: Struct([Field { name: "Mean", dtype: Float64 }, Field { name: "StandardDeviation", dtype: Float64 }, Field { name: "Values", dtype: List(Float64) }]) }, Field { name: "Relative", dtype: Float64 }, Field { name: "Delta", dtype: Float64 }])
+* name: Temperature,   field: Float64
+* name: ChainLength,   field: Struct([Field { name: "ECL", dtype: Float64 }, Field { name: "FCL", dtype: Float64 }, Field { name: "ECN", dtype: Int64 }])
+* name: Mass,          field: Struct([Field { name: "RCO", dtype: Float64 }, Field { name: "RCOO", dtype: Float64 }, Field { name: "RCOOH", dtype: Float64 }, Field { name: "RCOOCH3", dtype: Float64 }])
+* name: Derivative,    field: Struct([Field { name: "Slope", dtype: Float64 }, Field { name: "Angle", dtype: Float64 }])
+
+== Таблица дистанций
+
+Schema (63_000, 6):
+
+* name: Index,         field: UInt32
+* name: Mode,          field: Struct([Field { name: "OnsetTemperature", dtype: Float64 }, Field { name: "TemperatureStep", dtype: Float64 }])
+* name: From,          field: Struct([Field { name: "Carbons", dtype: UInt8 }, Field { name: "Unsaturated", dtype: List(Struct([Field { name: "Index", dtype: UInt8 }, Field { name: "Isomerism", dtype: Int8 }, Field { name: "Unsaturation", dtype: UInt8 }])) }])
+* name: To,            field: Struct([Field { name: "Carbons", dtype: UInt8 }, Field { name: "Unsaturated", dtype: List(Struct([Field { name: "Index", dtype: UInt8 }, Field { name: "Isomerism", dtype: Int8 }, Field { name: "Unsaturation", dtype: UInt8 }])) }])
+* name: RetentionTime, field: Struct([Field { name: "From", dtype: Float64 }, Field { name: "To", dtype: Float64 }, Field { name: "Delta", dtype: Float64 }])
+* name: ECL,           field: Struct([Field { name: "From", dtype: Float64 }, Field { name: "To", dtype: Float64 }, Field { name: "Delta", dtype: Float64 }])
