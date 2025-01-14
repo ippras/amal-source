@@ -6,8 +6,8 @@ use crate::{
     },
     utils::save,
 };
-use egui::{RichText, Ui, Window};
-use egui_phosphor::regular::{ARROWS_HORIZONTAL, FLOPPY_DISK, GEAR};
+use egui::{CursorIcon, Response, RichText, Ui, Window, util::hash};
+use egui_phosphor::regular::{ARROWS_HORIZONTAL, EXCLUDE, FLOPPY_DISK, GEAR};
 use metadata::MetaDataFrame;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -31,38 +31,41 @@ impl Pane {
         }
     }
 
-    pub(super) fn header(&mut self, ui: &mut Ui) {
+    pub(super) fn header(&mut self, ui: &mut Ui) -> Response {
         ui.visuals_mut().button_frame = false;
+        let mut response = ui.heading(EXCLUDE).on_hover_text(localize!("distance"));
+        response |= ui.heading(self.source.meta.title());
+        response = response
+            .on_hover_text(format!("{:x}", hash(&self.source)))
+            .on_hover_cursor(CursorIcon::Grab);
         ui.separator();
+        // Resize
         ui.toggle_value(
             &mut self.control.settings.resizable,
             RichText::new(ARROWS_HORIZONTAL).heading(),
         )
         .on_hover_text(localize!("resize"));
+        ui.separator();
+        // Settings
         ui.toggle_value(&mut self.control.open, RichText::new(GEAR).heading());
         ui.separator();
-        // ui.menu_button(RichText::new(FLOPPY_DISK).heading(), |ui| {
-        //     if ui.button("BIN").clicked() {
-        //         if let Err(error) = save("df.bin", Format::Bin, self.target.clone()) {
-        //             error!(%error);
-        //         }
-        //     }
-        //     if ui.button("RON").clicked() {
-        //         if let Err(error) = save("df.ron", Format::Ron, self.target.clone()) {
-        //             error!(%error);
-        //         }
-        //     }
-        // });
-        if ui.button(RichText::new(FLOPPY_DISK).heading()).clicked() {
-            let name = format!("{}.distance.ipc", self.source.meta.title());
+        // Save
+        let name = format!("{}.distance.ipc", self.source.meta.title());
+        if ui
+            .button(RichText::new(FLOPPY_DISK).heading())
+            .on_hover_text(&name)
+            .clicked()
+        {
             if let Err(error) = save(&name, Some(&self.source.meta), &mut self.target) {
                 error!(%error);
             }
             ui.close_menu();
         }
+        ui.separator();
+        response
     }
 
-    pub(super) fn content(&mut self, ui: &mut Ui) {
+    pub(super) fn body(&mut self, ui: &mut Ui) {
         self.window(ui);
         self.target = ui.memory_mut(|memory| {
             memory.caches.cache::<DistanceComputed>().get(DistanceKey {
@@ -70,12 +73,12 @@ impl Pane {
                 settings: &self.control.settings,
             })
         });
-        TableView::new(&self.target, &self.control.settings).ui(ui);
+        TableView::new(&self.target, &self.control.settings).show(ui);
     }
 
     fn window(&mut self, ui: &mut Ui) {
         Window::new(format!("{GEAR} Distance settings"))
-            .id(ui.next_auto_id())
+            .id(ui.auto_id_with("DistanceSettings"))
             .open(&mut self.control.open)
             .show(ui.ctx(), |ui| {
                 self.control.settings.ui(ui, &self.source.data);

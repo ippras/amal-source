@@ -1,5 +1,5 @@
 use self::panes::{Pane, behavior::Behavior};
-use crate::presets::AGILENT;
+use crate::{localize, presets::AGILENT};
 use anyhow::Result;
 use data::Data;
 use eframe::{APP_KEY, get_value, set_value};
@@ -22,15 +22,11 @@ use serde::{Deserialize, Serialize};
 use std::{fmt::Write, io::Cursor, str, time::Duration};
 use tracing::{error, info, trace};
 
-macro localize($text:literal) {
-    $text
-}
-
 /// IEEE 754-2008
 const MAX_PRECISION: usize = 16;
 const MAX_TEMPERATURE: f64 = 250.0;
 const _NOTIFICATIONS_DURATION: Duration = Duration::from_secs(15);
-const SIZE: f32 = 32.0;
+const ICON_SIZE: f32 = 32.0;
 
 #[derive(Deserialize, Serialize)]
 #[serde(default)]
@@ -171,7 +167,6 @@ impl App {
     fn panels(&mut self, ctx: &egui::Context) {
         self.top_panel(ctx);
         self.bottom_panel(ctx);
-        self.left_panel(ctx);
         self.central_panel(ctx);
     }
 
@@ -196,31 +191,22 @@ impl App {
         });
     }
 
-    // Left panel
-    fn left_panel(&mut self, ctx: &egui::Context) {
-        // SidePanel::left("left_panel")
-        //     .frame(egui::Frame::side_top_panel(&ctx.style()))
-        //     .resizable(true)
-        //     .show_animated(ctx, self.left_panel, |ui| {
-        //         ScrollArea::vertical().show(ui, |ui| {});
-        //     });
-    }
-
     // Top panel
     fn top_panel(&mut self, ctx: &egui::Context) {
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             bar(ui, |ui| {
                 ScrollArea::horizontal().show(ui, |ui| {
-                    ui.light_dark_button(SIZE);
+                    ui.light_dark_button(ICON_SIZE);
                     ui.separator();
-                    ui.toggle_value(&mut self.reactive, RichText::new(ROCKET).size(SIZE))
+                    // Reactive
+                    ui.toggle_value(&mut self.reactive, RichText::new(ROCKET).size(ICON_SIZE))
                         .on_hover_text("reactive")
                         .on_hover_text(localize!("reactive_description_enabled"))
                         .on_disabled_hover_text(localize!("reactive_description_disabled"));
                     ui.separator();
                     // Reset app
                     if ui
-                        .button(RichText::new(TRASH).size(SIZE))
+                        .button(RichText::new(TRASH).size(ICON_SIZE))
                         .on_hover_text(localize!("reset_application"))
                         .clicked()
                     {
@@ -232,7 +218,7 @@ impl App {
                     ui.separator();
                     // Reset GUI
                     if ui
-                        .button(RichText::new(ARROWS_CLOCKWISE).size(SIZE))
+                        .button(RichText::new(ARROWS_CLOCKWISE).size(ICON_SIZE))
                         .on_hover_text(localize!("reset_gui"))
                         .clicked()
                     {
@@ -242,7 +228,7 @@ impl App {
                     }
                     ui.separator();
                     if ui
-                        .button(RichText::new(SQUARE_SPLIT_VERTICAL).size(SIZE))
+                        .button(RichText::new(SQUARE_SPLIT_VERTICAL).size(ICON_SIZE))
                         .on_hover_text(localize!("vertical"))
                         .clicked()
                     {
@@ -253,7 +239,7 @@ impl App {
                         }
                     }
                     if ui
-                        .button(RichText::new(SQUARE_SPLIT_HORIZONTAL).size(SIZE))
+                        .button(RichText::new(SQUARE_SPLIT_HORIZONTAL).size(ICON_SIZE))
                         .on_hover_text(localize!("horizontal"))
                         .clicked()
                     {
@@ -264,7 +250,7 @@ impl App {
                         }
                     }
                     if ui
-                        .button(RichText::new(GRID_FOUR).size(SIZE))
+                        .button(RichText::new(GRID_FOUR).size(ICON_SIZE))
                         .on_hover_text(localize!("grid"))
                         .clicked()
                     {
@@ -275,7 +261,7 @@ impl App {
                         }
                     }
                     if ui
-                        .button(RichText::new(TABS).size(SIZE))
+                        .button(RichText::new(TABS).size(ICON_SIZE))
                         .on_hover_text(localize!("tabs"))
                         .clicked()
                     {
@@ -286,7 +272,7 @@ impl App {
                         }
                     }
                     ui.separator();
-                    ui.menu_button(RichText::new(DATABASE).size(SIZE), |ui| {
+                    ui.menu_button(RichText::new(DATABASE).size(ICON_SIZE), |ui| {
                         let mut response = ui
                             .button(RichText::new(format!("{DATABASE} IPPRAS/Agilent")).heading());
                         response = response.on_hover_ui(|ui| {

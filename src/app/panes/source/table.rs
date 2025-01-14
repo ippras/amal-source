@@ -1,6 +1,6 @@
 use super::Settings;
-use crate::app::panes::widgets::float::FloatValue;
-use egui::{Frame, Grid, Id, Margin, TextStyle, TextWrapMode, Ui, Vec2, vec2};
+use crate::app::panes::{MARGIN, widgets::float::FloatValue};
+use egui::{Frame, Grid, Id, Margin, TextStyle, TextWrapMode, Ui};
 use egui_table::{AutoSizeMode, CellInfo, Column, HeaderCellInfo, HeaderRow, Table, TableDelegate};
 use lipid::fatty_acid::{
     display::{COMMON, DisplayWithOptions as _},
@@ -8,8 +8,6 @@ use lipid::fatty_acid::{
 };
 use polars::prelude::*;
 use std::ops::Range;
-
-const MARGIN: Vec2 = vec2(4.0, 0.0);
 
 const ID: Range<usize> = 0..3;
 const RETENTION_TIME: Range<usize> = ID.end..ID.end + 3;
@@ -45,10 +43,10 @@ impl<'a> TableView<'a> {
 }
 
 impl TableView<'_> {
-    pub(super) fn ui(&mut self, ui: &mut Ui) {
+    pub(super) fn show(&mut self, ui: &mut Ui) {
         ui.visuals_mut().collapsing_header_frame = true;
-        let id_salt = Id::new("Table");
-        let height = ui.text_style_height(&TextStyle::Heading);
+        let id_salt = Id::new("SourceTable");
+        let height = ui.text_style_height(&TextStyle::Heading) + 2.0 * MARGIN.y;
         let num_rows = self.data_frame.height() as _;
         let num_columns = LEN;
         Table::new()
@@ -151,7 +149,7 @@ impl TableView<'_> {
                 ui.label(format!(
                     "{}/{}",
                     onset_temperature.str_value(row)?,
-                    temperature_step.str_value(row)?
+                    temperature_step.str_value(row)?,
                 ));
             }
             (row, id::FA) => {
@@ -305,7 +303,7 @@ impl TableDelegate for TableView<'_> {
     }
 
     fn cell_ui(&mut self, ui: &mut Ui, cell: &CellInfo) {
-        if cell.row_nr % 2 == 1 {
+        if cell.row_nr % 2 == 0 {
             ui.painter()
                 .rect_filled(ui.max_rect(), 0.0, ui.visuals().faint_bg_color);
         }
@@ -313,6 +311,7 @@ impl TableDelegate for TableView<'_> {
             .inner_margin(Margin::symmetric(MARGIN.x, MARGIN.y))
             .show(ui, |ui| {
                 self.body_cell_content_ui(ui, cell.row_nr as _, cell.col_nr..cell.col_nr + 1)
+                    .unwrap()
             });
     }
 }

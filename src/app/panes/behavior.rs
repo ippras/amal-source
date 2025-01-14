@@ -1,5 +1,5 @@
-use super::Pane;
-use egui::{CursorIcon, Frame, Margin, RichText, Sides, Ui, WidgetText};
+use super::{MARGIN, Pane};
+use egui::{Frame, Margin, RichText, Sides, Ui, WidgetText};
 use egui_phosphor::regular::X;
 use egui_tiles::{Tile, TileId, Tiles, UiResponse};
 use egui_tiles_ext::ContainerExt as _;
@@ -36,17 +36,13 @@ impl egui_tiles::Behavior<Pane> for Behavior {
 
     fn pane_ui(&mut self, ui: &mut Ui, tile_id: TileId, pane: &mut Pane) -> UiResponse {
         Frame::none()
-            .inner_margin(Margin::symmetric(4.0, 2.0))
+            .inner_margin(Margin::symmetric(MARGIN.x, MARGIN.y))
+            .stroke(ui.visuals().widgets.noninteractive.bg_stroke)
             .show(ui, |ui| {
                 let response = Sides::new()
                     .show(
                         ui,
-                        |ui| {
-                            let response =
-                                ui.heading(pane.title()).on_hover_cursor(CursorIcon::Grab);
-                            pane.header(ui);
-                            response
-                        },
+                        |ui| pane.header(ui),
                         |ui| {
                             ui.visuals_mut().button_frame = false;
                             if ui.button(RichText::new(X).heading()).clicked() {
@@ -55,7 +51,7 @@ impl egui_tiles::Behavior<Pane> for Behavior {
                         },
                     )
                     .0;
-                pane.content(ui);
+                pane.body(ui);
                 if response.dragged() {
                     UiResponse::DragStarted
                 } else {

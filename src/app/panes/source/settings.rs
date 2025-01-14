@@ -8,7 +8,7 @@ use egui_phosphor::regular::TRASH;
 use lipid::fatty_acid::{
     FattyAcid,
     display::{COMMON, DisplayWithOptions},
-    polars::{DataFrameExt as _, column::ColumnExt as _},
+    polars::column::ColumnExt as _,
 };
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};

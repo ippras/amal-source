@@ -30,13 +30,13 @@ impl<'a> PlotView<'a> {
 }
 
 impl PlotView<'_> {
-    pub(super) fn ui(&mut self, ui: &mut Ui) {
-        if let Err(error) = self.try_ui(ui) {
+    pub(super) fn show(&mut self, ui: &mut Ui) {
+        if let Err(error) = self.try_show(ui) {
             error!(%error);
         }
     }
 
-    fn try_ui(&mut self, ui: &mut Ui) -> PolarsResult<()> {
+    fn try_show(&mut self, ui: &mut Ui) -> PolarsResult<()> {
         // let mode = &self.data_frame["Mode"];
         let index = self.data_frame["Index"].u32()?;
         let fatty_acid = self.data_frame.fatty_acid();
