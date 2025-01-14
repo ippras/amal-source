@@ -117,7 +117,7 @@ impl Pane {
             .id(ui.auto_id_with("SourceSettings"))
             .open(&mut self.control.open)
             .show(ui.ctx(), |ui| {
-                if let Err(error) = self.control.settings.ui(ui, &self.source.data) {
+                if let Err(error) = self.control.settings.show(ui, &self.source.data) {
                     error!(%error);
                 }
             });

@@ -55,7 +55,7 @@ impl Settings {
         }
     }
 
-    pub(crate) fn ui(&mut self, ui: &mut Ui, data_frame: &DataFrame) {
+    pub(crate) fn show(&mut self, ui: &mut Ui, data_frame: &DataFrame) {
         Grid::new("calculation").show(ui, |ui| {
             // Precision floats
             ui.label(localize!("precision"));

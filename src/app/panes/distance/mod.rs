@@ -80,7 +80,7 @@ impl Pane {
             .id(ui.auto_id_with("DistanceSettings"))
             .open(&mut self.control.open)
             .show(ui.ctx(), |ui| {
-                self.control.settings.ui(ui, &self.source.data);
+                self.control.settings.show(ui, &self.source.data);
             });
     }
 }

@@ -155,8 +155,8 @@ impl TableView<'_> {
             (row, id::FA) => {
                 let fatty_acids = self.data_frame["FattyAcid"].fatty_acid();
                 let fatty_acid = fatty_acids.get(row)?.unwrap();
-                ui.label(format!("{:#}", fatty_acid.display(COMMON)));
-                // .on_hover_text(fatty_acid.label());
+                let text = format!("{:#}", fatty_acid.display(COMMON));
+                ui.label(&text).on_hover_text(&text);
             }
             (row, retention_time::ABSOLUTE) => {
                 let retention_time = self.data_frame["RetentionTime"].struct_()?;

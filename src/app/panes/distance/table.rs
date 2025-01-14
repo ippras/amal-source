@@ -9,14 +9,6 @@ use lipid::fatty_acid::{
 use polars::prelude::*;
 use std::ops::Range;
 
-// const ID: Range<usize> = 0..3;
-// const RETENTION_TIME: Range<usize> = ID.end..ID.end + 3;
-// const TEMPERATURE: Range<usize> = RETENTION_TIME.end..RETENTION_TIME.end + 1;
-// const CHAIN_LENGTH: Range<usize> = TEMPERATURE.end..TEMPERATURE.end + 3;
-// const MASS: Range<usize> = CHAIN_LENGTH.end..CHAIN_LENGTH.end + 1;
-// const DERIVATIVE: Range<usize> = MASS.end..MASS.end + 2;
-// const LEN: usize = DERIVATIVE.end;
-
 const INDEX: Range<usize> = 0..1;
 const MODE: Range<usize> = INDEX.end..INDEX.end + 1;
 const FROM: Range<usize> = MODE.end..MODE.end + 1;
