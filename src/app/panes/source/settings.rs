@@ -202,7 +202,7 @@ impl Settings {
                                     let mut selected = contains;
                                     ui.toggle_value(
                                         &mut selected,
-                                        (&fatty_acid).display(COMMON).to_string(),
+                                        format!("{:#}", (&fatty_acid).display(COMMON)),
                                     );
                                     if selected && !contains {
                                         self.filter.fatty_acids.push(fatty_acid);

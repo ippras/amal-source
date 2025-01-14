@@ -11,7 +11,7 @@ use crate::{
     },
     utils::save,
 };
-use egui::{CursorIcon, Id, Response, RichText, Ui, Window, util::hash};
+use egui::{Button, CursorIcon, Id, Response, RichText, Ui, Window, util::hash};
 use egui_phosphor::regular::{ARROWS_HORIZONTAL, CHART_BAR, EXCLUDE, FLOPPY_DISK, GEAR, TABLE};
 use metadata::MetaDataFrame;
 use polars::prelude::*;
@@ -68,7 +68,13 @@ impl Pane {
         };
         ui.separator();
         // Distance
-        if ui.button(RichText::new(EXCLUDE).heading()).clicked() {
+        if ui
+            .add_enabled(
+                self.control.settings.kind == Kind::Table,
+                Button::new(RichText::new(EXCLUDE).heading()),
+            )
+            .clicked()
+        {
             ui.data_mut(|data| {
                 data.insert_temp(
                     Id::new("Distance"),

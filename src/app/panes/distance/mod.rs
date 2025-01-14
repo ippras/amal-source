@@ -59,7 +59,6 @@ impl Pane {
             if let Err(error) = save(&name, Some(&self.source.meta), &mut self.target) {
                 error!(%error);
             }
-            ui.close_menu();
         }
         ui.separator();
         response

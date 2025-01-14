@@ -1,8 +1,8 @@
 use super::Settings;
 use crate::special::data_frame::DataFrameExt;
-use egui::{Id, Ui, emath::Float, util::hash};
+use egui::{Ui, util::hash};
 use egui_ext::color;
-use egui_plot::{Line, LineStyle, MarkerShape, Plot, PlotItem, PlotPoints, Points};
+use egui_plot::{Line, LineStyle, MarkerShape, Plot, PlotItem, Points};
 use itertools::izip;
 use lipid::fatty_acid::{
     FattyAcidExt,
@@ -109,27 +109,22 @@ impl PlotView<'_> {
                         }
                     }
                     // Line
-                    let mut line = Line::new(points.clone()).name(format!("{:#}", (&fatty_acid).display(COMMON)));
-                    if fatty_acid.is_unsaturated() && self.settings.filter.mode.onset_temperature.is_none() {
-                        line = line.color(color(onset_temperature as _));
-                    } else {
-                        line = line.color(color(index as _));
-                    };
-                    if fatty_acid.is_unsaturated() {
+                    let mut line = Line::new(points.clone()).name(format!("{:#} {onset_temperature}", (&fatty_acid).display(COMMON)));
+                    if fatty_acid.unsaturation() != 0 {
                         line = line.style(LineStyle::Dashed { length: 16.0 });
                     }
                     ui.line(line);
-                    // // Points
-                    // let mut points = Points::new(points)
-                    //     .name(format!("{:#} {temperature_step}", (&fatty_acid).display(COMMON)))
-                    //     .color(color(onset_temperature as _))
-                    //     // .name(onset_temperature)
-                    //     // .color(color(onset_temperature as _))
-                    //     .radius(3.0);
-                    // if fatty_acid.unsaturation() == 0 {
-                    //     points = points.shape(MarkerShape::Square);
-                    // }
-                    // ui.points(points);
+                    // Points
+                    let mut points = Points::new(points)
+                        .name(format!("{:#} {temperature_step}", (&fatty_acid).display(COMMON)))
+                        .color(color(onset_temperature as _))
+                        // .name(onset_temperature)
+                        // .color(color(onset_temperature as _))
+                        .radius(3.0);
+                    if fatty_acid.unsaturation() == 0 {
+                        points = points.shape(MarkerShape::Square);
+                    }
+                    ui.points(points);
                 }
 
                 // if let Some(fatty_acid) = fatty_acid {

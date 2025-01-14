@@ -220,7 +220,7 @@ impl ComputerMut<Key<'_>, DataFrame> for Computer {
             Kind::Table => lazy_frame,
         };
         // Index
-        lazy_frame = lazy_frame.cache().with_row_index("Index", None);
+        lazy_frame = lazy_frame.with_row_index("Index", None);
         lazy_frame.collect().expect("collect source")
     }
 }

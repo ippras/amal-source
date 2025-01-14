@@ -10,6 +10,7 @@ eframe = { version = "0.30.0", default-features = false, features = [
     "default_fonts",
     "glow",
     "persistence",
+    "wayland",
 ] }
 egui = "0.30.0"
 egui-phosphor = "0.8.0"
@@ -21,6 +22,7 @@ egui_tiles = "0.11.0"
 egui_tiles_ext = { git = "https://github.com/kgv/egui_tiles_ext" }
 itertools = "0.14.0"
 lipid = { git = "https://github.com/ippras/lipid" }
+log = "0.4.25"
 metadata = { git = "https://github.com/ippras/metadata" }
 polars = { version = "0.45.1", features = [
     "abs",
