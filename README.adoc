@@ -1,1 +1,7 @@
-= ???
+= CPFT
+
+Chromatographic Parameters of Fatty acid methyl esters as function of Temperature
+
+== Columns
+
+* HP-88 capillary column
